@@ -28,7 +28,7 @@ export const LOGROS: Logro[] = [
     icono: Heart,
     titulo: "Experiencia clínica",
     descripcion:
-      "Más de tres décadas de atención emocional y desarrollo personal.",
+      "Más de tres décadas de atención emocional y desarrollo personal. .as",
   },
   {
     icono: Briefcase,
