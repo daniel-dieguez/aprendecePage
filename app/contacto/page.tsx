@@ -2,6 +2,8 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Select, { StylesConfig } from "react-select";
+import { PAISES } from "../Components/data/paises"; // ← ajusta la ruta a donde tengas tu data
 
 // ─── Datos (edita solo esto) ────────────────────────────────
 const TELEFONO = "50255162181";
@@ -37,6 +39,57 @@ type Datos = {
 };
 
 const VACIO: Datos = { nombre: "", pais: "", edad: "", profesion: "" };
+
+// ─── Selector de países ─────────────────────────────────────
+type OpcionPais = { value: string; label: string };
+
+// Se calcula una sola vez (fuera del componente)
+const opcionesPaises: OpcionPais[] = PAISES.map((pais) => ({
+  value: pais.nombre,
+  label: `${pais.bandera} ${pais.nombre}`,
+}));
+
+// Estilos de react-select para que combine con el resto del formulario
+const estilosSelect: StylesConfig<OpcionPais, false> = {
+  control: (base, state) => ({
+    ...base,
+    minHeight: 48,
+    borderRadius: 12,
+    borderColor: state.isFocused ? "#6f8f82" : "#e7ece9",
+    backgroundColor: state.isFocused ? "#fff" : "#fbfcfb",
+    boxShadow: "none",
+    cursor: "pointer",
+    "&:hover": { borderColor: "#6f8f82" },
+  }),
+  valueContainer: (base) => ({ ...base, padding: "2px 14px" }),
+  input: (base) => ({ ...base, fontSize: 16, color: "#2f3a36" }), // 16px evita zoom en iPhone
+  placeholder: (base) => ({ ...base, color: "#7b8782", fontSize: 16 }),
+  singleValue: (base) => ({ ...base, color: "#2f3a36", fontSize: 16 }),
+  indicatorSeparator: () => ({ display: "none" }),
+  dropdownIndicator: (base) => ({ ...base, color: "#7b8782" }),
+  menu: (base) => ({
+    ...base,
+    borderRadius: 12,
+    overflow: "hidden",
+    border: "1px solid #e7ece9",
+    boxShadow: "0 12px 30px rgba(47, 58, 54, 0.12)",
+  }),
+  // El menú se dibuja fuera del modal, así que debe quedar por encima de él
+  menuPortal: (base) => ({ ...base, zIndex: 100 }),
+  option: (base, state) => ({
+    ...base,
+    fontSize: 15,
+    cursor: "pointer",
+    color: "#2f3a36",
+    backgroundColor: state.isSelected
+      ? "#dfe9e4"
+      : state.isFocused
+      ? "#f1f5f3"
+      : "#fff",
+    "&:active": { backgroundColor: "#dfe9e4" },
+  }),
+  noOptionsMessage: (base) => ({ ...base, color: "#7b8782", fontSize: 14 }),
+};
 
 function armarMensaje(motivo: string, d: Datos) {
   let mensaje =
@@ -248,6 +301,7 @@ const css = `
   font-family: inherit;
   transition: border-color 0.2s, background 0.2s;
 }
+.cont__error { font-size: 0.8rem; color: #b5574b; }
 .cont__input:focus {
   outline: none;
   border-color: var(--accent);
@@ -322,6 +376,7 @@ export default function Contacto() {
   const [entorno, setEntorno] = useState<Entorno | null>(null);
   const [intentado, setIntentado] = useState(false); // ya se intentó abrir WhatsApp
   const [copiado, setCopiado] = useState(false);
+  const [errorPais, setErrorPais] = useState(false);
 
   // Detectar desde dónde se abrió la página (solo en el navegador)
   useEffect(() => {
@@ -332,6 +387,7 @@ export default function Contacto() {
     setSeleccion(null);
     setIntentado(false);
     setCopiado(false);
+    setErrorPais(false);
   };
 
   // Bloquea el scroll, enfoca el primer campo y cierra con Escape
@@ -354,7 +410,8 @@ export default function Contacto() {
   }, [seleccion]);
 
   const cambiar =
-    (campo: keyof Datos) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    (campo: keyof Datos) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setDatos((d) => ({ ...d, [campo]: e.target.value }));
 
   const mensajeActual = () =>
@@ -363,6 +420,12 @@ export default function Contacto() {
   const enviar = (e: React.FormEvent) => {
     e.preventDefault();
     if (seleccion === null) return;
+
+    // react-select no valida "required" por sí solo en todos los navegadores
+    if (!datos.pais) {
+      setErrorPais(true);
+      return;
+    }
 
     const { web, app, intent } = armarEnlaces(mensajeActual());
 
@@ -515,15 +578,30 @@ export default function Contacto() {
 
               <label className="cont__field">
                 <span className="cont__label">País donde se encuentra</span>
-                <input
-                  className="cont__input"
-                  type="text"
+                <Select<OpcionPais, false>
+                  instanceId="select-pais"
+                  inputId="pais"
                   name="pais"
-                  autoComplete="country-name"
-                  required
-                  value={datos.pais}
-                  onChange={cambiar("pais")}
+                  options={opcionesPaises}
+                  placeholder="Busca un país..."
+                  isSearchable
+                  value={
+                    opcionesPaises.find((p) => p.value === datos.pais) || null
+                  }
+                  onChange={(opcion) => {
+                    setDatos((d) => ({ ...d, pais: opcion?.value ?? "" }));
+                    setErrorPais(false);
+                  }}
+                  noOptionsMessage={() => "No se encontraron países"}
+                  styles={estilosSelect}
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  menuPlacement="auto"
                 />
+                {errorPais && (
+                  <span className="cont__error">Selecciona tu país</span>
+                )}
               </label>
 
               <label className="cont__field">
