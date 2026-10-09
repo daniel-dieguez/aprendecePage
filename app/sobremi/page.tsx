@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import perfil from "../Components/images/licenciado3.png"
 import ContadorAnimado from "../Components/contadorAnimado";
 import TextoDesplegable from "../Components/textoDesplegable";
 import { ESTADISTICAS, LOGROS } from "../utils/logros";
@@ -19,7 +20,7 @@ export default function InformacionPage() {
       {/* Encabezado */}
       <div className="flex flex-col items-center text-center">
         <Image
-          src="/luis-dieguez.jpg"
+          src={perfil}
           alt="Luis Diéguez, psicólogo clínico"
           width={128}
           height={128}
@@ -77,13 +78,15 @@ export default function InformacionPage() {
   })}
 </div>
 
-      {/* Llamado a la acción */}
-      <Link
-        href="/contacto"
-        className="mt-10 block rounded-full border border-gray-300 py-3 text-center text-gray-800 transition-colors active:bg-gray-100"
-      >
-        Contactarme
-      </Link>
+    <div className="mt-10 grid grid-cols-2 gap-3">
+      <Link href="/contacto" className="flex-1 rounded-full border border-gray-300 py-3 text-center text-gray-800 transition-colors hover:bg-gray-100 active:bg-gray-200" > 
+      Contactarme </Link> 
+      <Link href="/home" className="flex-1 rounded-full border border-gray-300 py-3 text-center text-gray-800 transition-colors hover:bg-gray-100 active:bg-gray-200" > 
+      Regresar
+       </Link> 
+       </div>
+   
+      
     </section>
   );
 }
