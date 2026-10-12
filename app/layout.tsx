@@ -3,7 +3,7 @@ import "./globals.css";
 import Navbar from "./Components/navbar";
 
 export const metadata: Metadata = {
-  title: "Psicólogo Clínico",
+  title: "Psicólogo Luis Dieguez",
   description: "Atención psicológica profesional",
 };
 
